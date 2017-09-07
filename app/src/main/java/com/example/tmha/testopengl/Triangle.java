@@ -25,9 +25,9 @@ public class Triangle {
     // number of coordinates per vertex in this array
     static final int COORDS_PER_VERTEX = 3;
     static float triangleCoords[] = {   // in counterclockwise order:
-            0.0f,  0.622008459f, 0.0f, // top
-            -0.5f, -0.311004243f, 0.0f, // bottom left
-            0.5f, -0.311004243f, 0.0f  // bottom right
+             0.0f,  1.0f, 0.0f, // top
+            -1.0f,  0.0f, 0.0f, // bottom left
+             1.0f,  0.0f, 0.0f  // bottom right
     };
 
     // Set color with red, green, blue and alpha (opacity) values
@@ -82,7 +82,7 @@ public class Triangle {
 
 
     public void draw(float[] mvpMatrix) {
-        // Add program to OpenGL ES environment
+        // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
         // get handle to vertex shader's vPosition member
@@ -92,7 +92,8 @@ public class Triangle {
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
         // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
+        GLES20.glVertexAttribPointer(
+                mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 vertexStride, vertexBuffer);
 
@@ -102,17 +103,11 @@ public class Triangle {
         // Set color for drawing the triangle
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
-        // Draw the triangle
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
-
-        // Disable vertex array
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
-
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
         MyGLRenderer.checkGlError("glGetUniformLocation");
 
-        // Pass the projection and view transformation to the shader
+        // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
         MyGLRenderer.checkGlError("glUniformMatrix4fv");
 

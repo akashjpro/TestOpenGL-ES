@@ -65,5 +65,4 @@ public class MyGLSurfaceView extends GLSurfaceView {
         mPreviousY = y;
         return true;
     }
-
 }

@@ -23,36 +23,42 @@ import java.util.Scanner;
 
 public class Torus {
 
-    private List<String> verticesList;
-    private List<String> faceList;
+
     private FloatBuffer verticesBuffer;
-    private ShortBuffer faceBuffer;
+    private ShortBuffer facesBuffer;
+    private List<String> verticesList;
+    private List<String> facesList;
+
     private int program;
 
     public Torus(Context context) {
         verticesList = new ArrayList<>();
-        faceList = new ArrayList<>();
+        facesList = new ArrayList<>();
 
         try {
             Scanner scanner = new Scanner(context.getAssets().open("torus.obj"));
-            while (scanner.hasNextLine()){
+            while(scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                if (line.startsWith("v ")){
+                if(line.startsWith("v ")) {
                     verticesList.add(line);
-                }else if(line.startsWith("f ")){
-                    faceList.add(line);
+                } else if(line.startsWith("f ")) {
+                    facesList.add(line);
                 }
             }
-
             scanner.close();
 
-            //Create buffer for vertices
-            ByteBuffer bufferVertices = ByteBuffer.allocateDirect(verticesList.size()* 3 * 4);// 3:(x,y,z), 4:(x : 4 byte)
-            bufferVertices.order(ByteOrder.nativeOrder());
-            verticesBuffer = bufferVertices.asFloatBuffer();
+            // Create buffer for vertices
+            ByteBuffer buffer1 = ByteBuffer.allocateDirect(verticesList.size() * 3 * 4);
+            buffer1.order(ByteOrder.nativeOrder());
+            verticesBuffer = buffer1.asFloatBuffer();
 
-            for (String vertex : verticesList){
-                String coords[] = vertex.split(" "); // split by space
+            // Create buffer for faces
+            ByteBuffer buffer2 = ByteBuffer.allocateDirect(facesList.size() * 3 * 2);
+            buffer2.order(ByteOrder.nativeOrder());
+            facesBuffer = buffer2.asShortBuffer();
+
+            for(String vertex: verticesList) {
+                String coords[] = vertex.split(" ");
                 float x = Float.parseFloat(coords[1]);
                 float y = Float.parseFloat(coords[2]);
                 float z = Float.parseFloat(coords[3]);
@@ -60,30 +66,22 @@ public class Torus {
                 verticesBuffer.put(y);
                 verticesBuffer.put(z);
             }
-
             verticesBuffer.position(0);
 
-            ByteBuffer bufferFace = ByteBuffer.allocateDirect(faceList.size()* 3 * 2);// 3:(x,y,z), 2:(x : 2 byte)
-            bufferFace.order(ByteOrder.nativeOrder());
-            faceBuffer = bufferFace.asShortBuffer();
-
-            for (String face : faceList){
-                String vertexIndices[] = face.split(" "); // split by space
-                Short vertex1 = Short.parseShort(vertexIndices[1]);
-                Short vertex2 = Short.parseShort(vertexIndices[2]);
-                Short vertex3 = Short.parseShort(vertexIndices[3]);
-                faceBuffer.put((short) (vertex1 - 1));
-                faceBuffer.put((short) (vertex2 - 1));
-                faceBuffer.put((short) (vertex3 - 1));
+            for(String face: facesList) {
+                String vertexIndices[] = face.split(" ");
+                short vertex1 = Short.parseShort(vertexIndices[1]);
+                short vertex2 = Short.parseShort(vertexIndices[2]);
+                short vertex3 = Short.parseShort(vertexIndices[3]);
+                facesBuffer.put((short)(vertex1 - 1));
+                facesBuffer.put((short)(vertex2 - 1));
+                facesBuffer.put((short)(vertex3 - 1));
             }
-
-            faceBuffer.position(0);
-
+            facesBuffer.position(0);
 
             InputStream vertexShaderStream = context.getResources().openRawResource(R.raw.vertex_shader);
             String vertexShaderCode = IOUtils.toString(vertexShaderStream, Charset.defaultCharset());
             vertexShaderStream.close();
-
 
             InputStream fragmentShaderStream = context.getResources().openRawResource(R.raw.fragment_shader);
             String fragmentShaderCode = IOUtils.toString(fragmentShaderStream, Charset.defaultCharset());
@@ -91,25 +89,25 @@ public class Torus {
 
             int vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
             GLES20.glShaderSource(vertexShader, vertexShaderCode);
-            GLES20.glCompileShader(vertexShader);
 
             int fragmentShader = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
             GLES20.glShaderSource(fragmentShader, fragmentShaderCode);
-            GLES20.glCompileShader(fragmentShader);
 
+            GLES20.glCompileShader(vertexShader);
+            GLES20.glCompileShader(fragmentShader);
 
             program = GLES20.glCreateProgram();
             GLES20.glAttachShader(program, vertexShader);
             GLES20.glAttachShader(program, fragmentShader);
             GLES20.glLinkProgram(program);
-            GLES20.glUseProgram(program);
 
+            GLES20.glUseProgram(program);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void draw(){
+    public void draw() {
         int position = GLES20.glGetAttribLocation(program, "position");
         GLES20.glEnableVertexAttribArray(position);
         GLES20.glVertexAttribPointer(position, 3, GLES20.GL_FLOAT, false, 3 * 4, verticesBuffer);
@@ -126,10 +124,9 @@ public class Torus {
 
         int matrix = GLES20.glGetUniformLocation(program, "matrix");
         GLES20.glUniformMatrix4fv(matrix, 1, false, productMatrix, 0);
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES,
-                faceList.size()*3, GLES20.GL_UNSIGNED_SHORT, faceBuffer);
-        GLES20.glDisableVertexAttribArray(position);
 
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, facesList.size() * 3, GLES20.GL_UNSIGNED_SHORT, facesBuffer);
+        GLES20.glDisableVertexAttribArray(position);
 
     }
 }

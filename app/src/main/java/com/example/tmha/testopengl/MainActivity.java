@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //Create GLSurfaceView instance and set it as the setContentView for this Activity
-       // mSurfaceView = new MyGLSurfaceView(this);
+//        mSurfaceView = new MyGLSurfaceView(this);
+//        setContentView(mSurfaceView);
         setContentView(R.layout.activity_main);
 
     }
@@ -33,4 +34,23 @@ public class MainActivity extends AppCompatActivity {
     public void blenderClick(View view) {
         startActivity(new Intent(this, BlenderCubeActivity.class));
     }
+
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        // The following call pauses the rendering thread.
+//        // If your OpenGL application is memory intensive,
+//        // you should consider de-allocating objects that
+//        // consume significant memory here.
+//        mSurfaceView.onPause();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        // The following call resumes a paused rendering thread.
+//        // If you de-allocated graphic objects for onPause()
+//        // this is a good place to re-allocate them.
+//        mSurfaceView.onResume();
+//    }
 }
